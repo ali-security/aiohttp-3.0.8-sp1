@@ -1,6 +1,8 @@
+# Visual Studio 2015 is the last AppVeyor image that ships the
+# Python 3.5/3.6 toolchains aiohttp 3.0.8 is built against.
+image: Visual Studio 2015
+
 environment:
-  PYPI_PASSWD:
-    secure: u+K6dKi7+CXXVFEUG4V7zUyV3w7Ntg0Ork/RGVV0eSQ=
   matrix:
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python35-x64"
@@ -8,28 +10,10 @@ environment:
     - PYTHON: "C:\\Python36-x64"
 
 install:
-  - "tools/build.cmd %PYTHON%\\python.exe -m pip install -U wheel setuptools"
+  - "tools/build.cmd %PYTHON%\\python.exe -m pip install -U pip wheel setuptools"
   - "tools/build.cmd %PYTHON%\\python.exe -m pip install -r requirements/ci.txt"
 
 build: false
 
 test_script:
   - "tools/build.cmd %PYTHON%\\python.exe setup.py test"
-
-after_test:
-  - "tools/build.cmd %PYTHON%\\python.exe setup.py sdist bdist_wheel"
-
-artifacts:
-  - path: dist\*
-
-deploy_script:
-  - ps: >-
-      if($env:appveyor_repo_tag -eq 'True') {
-          Invoke-Expression "$env:PYTHON\\python.exe -m twine upload dist/* --username andrew.svetlov --password $env:PYPI_PASSWD"
-      }
-
-#notifications:
-#  - provider: Webhook
-#    url: https://ci.appveyor.com/api/github/webhook?id=08c7793w1tp839fl
-#    on_build_success: false
-#    on_build_failure: True
